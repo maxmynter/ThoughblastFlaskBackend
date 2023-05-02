@@ -32,7 +32,7 @@ def transcribe():
         language = request.form['language']
         model = request.form['model_size']
         try: 
-            summarise = request.form['summarise']
+            summarise = request.form['summarise'] == 'summarise'
         except:
             summarise = False
 
@@ -59,6 +59,7 @@ def transcribe():
         print('Finished Transcription')
 
         if summarise:
+            print("Summarising @ OpenAI")
             import openai
             openai.api_key = os.getenv("OPENAI_API_KEY")
             prompt =f"summarize this text: {result['text']}"
@@ -67,9 +68,11 @@ def transcribe():
                 prompt=prompt,
                 temperature=1,
                 max_tokens=250)
+            print("Return Transcribed and Sumarised")
             return return_value["choices"][0]["text"]
 
         else:
+            print("Return Transcribed")
             return result['text']
         
     elif request.method =="GET":
