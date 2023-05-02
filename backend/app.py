@@ -67,7 +67,7 @@ def transcribe():
                 model="text-curie-001",
                 prompt=prompt,
                 temperature=1,
-                max_tokens=250)
+                max_tokens=100)
             print("Return Transcribed and Sumarised")
             return return_value["choices"][0]["text"].strip().strip("/n")
 
