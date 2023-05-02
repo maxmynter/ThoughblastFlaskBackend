@@ -31,6 +31,10 @@ def transcribe():
     if request.method == 'POST':
         language = request.form['language']
         model = request.form['model_size']
+        try: 
+            summarise = request.form['summarise']
+        except:
+            summarise = False
 
         # there are no english models for large
         print("Selecting model")
@@ -54,7 +58,20 @@ def transcribe():
 
         print('Finished Transcription')
 
-        return result['text']
+        if summarise:
+            import openai
+            openai.api_key = os.getenv("OPENAI_API_KEY")
+            prompt =f"summarize this text: {result['text']}"
+            return_value = openai.Completion.create(
+                model="text-curie-001",
+                prompt=prompt,
+                temperature=1,
+                max_tokens=250)
+            return return_value["choices"][0]["text"]
+
+        else:
+            return result['text']
+        
     elif request.method =="GET":
         return "HI"
     else:
