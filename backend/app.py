@@ -49,3 +49,7 @@ def transcribe():
         return "HI"
     else:
         return "This endpoint only processes POST wav blob"
+    
+
+if __name__ == '__main__':
+    app.run(debug=True, port=os.getenv("PORT", default=8000))
