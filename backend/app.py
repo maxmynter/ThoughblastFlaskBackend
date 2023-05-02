@@ -62,14 +62,14 @@ def transcribe():
             print("Summarising @ OpenAI")
             import openai
             openai.api_key = os.getenv("OPENAI_API_KEY")
-            prompt =f"summarize this text: {result['text']}"
+            prompt =f"{result['text']}\n tl;dr"
             return_value = openai.Completion.create(
                 model="text-curie-001",
                 prompt=prompt,
                 temperature=1,
                 max_tokens=250)
             print("Return Transcribed and Sumarised")
-            return return_value["choices"][0]["text"]
+            return return_value["choices"][0]["text"].strip().strip("/n")
 
         else:
             print("Return Transcribed")
