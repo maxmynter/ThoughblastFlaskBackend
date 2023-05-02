@@ -15,6 +15,7 @@ app.config['SECRET_KEY'] = SECRET_KEY
 
 @app.route('/',methods=['GET'])
 def hello():
+    print(__name__)
     if request.method =="GET":
         return 'Hello!'
 
@@ -49,7 +50,3 @@ def transcribe():
         return "HI"
     else:
         return "This endpoint only processes POST wav blob"
-    
-
-if __name__ == '__main__':
-    app.run(debug=True, port=os.getenv("PORT", default=8000))
