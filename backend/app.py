@@ -15,7 +15,6 @@ app.config['SECRET_KEY'] = SECRET_KEY
 
 @app.route('/',methods=['GET'])
 def hello():
-    print(__name__)
     if request.method =="GET":
         return 'Hello!'
 
@@ -52,4 +51,7 @@ def transcribe():
         return "This endpoint only processes POST wav blob"
     
 if __name__ == '__main__':
-    app.run(debug=True, port=os.getenv("PORT", default=5000))
+    print('Serving Production ... ')
+    from waitress import serve
+    serve(app, host="0.0.0.0", port=8080)
+    print('Served')
