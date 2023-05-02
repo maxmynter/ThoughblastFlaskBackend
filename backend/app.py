@@ -62,12 +62,12 @@ def transcribe():
             print("Summarising @ OpenAI")
             import openai
             openai.api_key = os.getenv("OPENAI_API_KEY")
-            prompt =f"{result['text']}\n tl;dr"
+            prompt =f"You are a a model to summarise, and structure audio transcriptions into clear concise points. Transcript: {result['text']}\n Write a tl;dr summary of the Input. Stay concise. Write bullets and notes, not full sentences. Omit verbose structures. Do not mention the author or medium of publication (Text, Arcticle, etc.) tl;dr summary of transcript:"
             return_value = openai.Completion.create(
                 model="text-curie-001",
                 prompt=prompt,
                 temperature=1,
-                max_tokens=100)
+                max_tokens=200)
             print("Return Transcribed and Sumarised")
             return return_value["choices"][0]["text"].strip().strip("/n")
 
