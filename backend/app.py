@@ -23,12 +23,13 @@ def hello():
 @app.route('/transcribe', methods=['POST', 'GET'])
 @token_required
 def transcribe():
-    print(request.method)
+    print('/transcribe endpoint',request.method)
     if request.method == 'POST':
         language = request.form['language']
         model = request.form['model_size']
 
         # there are no english models for large
+        print("Selecting model")
         if model != 'large' and language == 'english':
             model = model + '.en'
         audio_model = whisper.load_model(model)
@@ -39,10 +40,13 @@ def transcribe():
         wav_file = request.files['audio_data']
         wav_file.save(save_path)
 
+        print('Transcribing ... ')
         if language == 'english':
             result = audio_model.transcribe(save_path, language='english')
         else:
             result = audio_model.transcribe(save_path)
+
+        print('Finished Transcription')
 
         return result['text']
     elif request.method =="GET":
