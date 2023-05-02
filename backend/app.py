@@ -4,10 +4,13 @@ import flask
 from flask import request
 from flask_cors import CORS
 import whisper
+import torch 
 from auth_middleware import token_required
 
 app = flask.Flask(__name__)
 CORS(app)
+torch.cuda.is_available()
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 SECRET_KEY = os.getenv("MY_SECRET") or 'this is a secret'
 app.config['SECRET_KEY'] = SECRET_KEY
@@ -33,7 +36,9 @@ def transcribe():
         print("Selecting model")
         if model != 'large' and language == 'english':
             model = model + '.en'
-        audio_model = whisper.load_model(model)
+        audio_model = whisper.load_model(model, device=DEVICE)
+        print('Run model on device:', DEVICE)
+
 
         temp_dir = tempfile.mkdtemp()
         save_path = os.path.join(temp_dir, 'temp.wav')
