@@ -24,6 +24,7 @@ def hello():
 @token_required
 def transcribe():
     print('/transcribe endpoint',request.method)
+    print(request.form)
     if request.method == 'POST':
         language = request.form['language']
         model = request.form['model_size']
