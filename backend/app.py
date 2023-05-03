@@ -58,7 +58,7 @@ def transcribe():
 
         try: 
             summarise_flag_set = request.form['summarise'] == 'summarise'
-            recording_long_enough = recording.duration_seconds > 30
+            recording_long_enough = recording.duration_seconds > 20
             print('Summarising Flag', summarise_flag_set, 'Length Flag', recording_long_enough, "Recording Length", recording.duration_seconds)
             summarise = summarise_flag_set and recording_long_enough
         except:
@@ -69,7 +69,7 @@ def transcribe():
                 print("Summarising @ OpenAI")
                 import openai
                 openai.api_key = os.getenv("OPENAI_API_KEY")
-                prompt =f"You are a model to summarise, and structure audio transcriptions of your thoughts into clear concise points. Your thoughts are already transcribed in a transcript. Write a tl;dr summary of the transcript. Stay concise. Omit verbose structures. Do not mention the narrator explicitly. Instead refer to I, Me etc. as you are the author. Do not mention the medium (transcript, voice recording, article) \nTranscript: {transcribed_voice_note}\nSummary:"
+                prompt =f"You are a model to summarise, and structure audio transcriptions of your thoughts into clear concise points. The thoughts you had are already transcribed and will be provided below this instructions. Write a tl;dr summary of the transcript. Stay concise. Omit verbose structures. You are the author of the thoughts. So dont mention 'the author' etc., rather refer to I, me, etc.  Do not mention the medium (transcript, voice recording, article). Do not omit vital information.\n\nTranscript: {transcribed_voice_note}\n\nSummary:"
                 print('Prompt: ',prompt)
                 return_value = openai.Completion.create(
                     model="text-curie-001",
