@@ -3,14 +3,13 @@ import tempfile
 import flask
 from flask import request
 from flask_cors import CORS
-import whisper
-import torch 
 from auth_middleware import token_required
+import banana_dev as banana
+from pydub import AudioSegment
+import base64
 
 app = flask.Flask(__name__)
 CORS(app)
-torch.cuda.is_available()
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 SECRET_KEY = os.getenv("MY_SECRET") or 'this is a secret'
 app.config['SECRET_KEY'] = SECRET_KEY
@@ -18,52 +17,54 @@ app.config['SECRET_KEY'] = SECRET_KEY
 
 @app.route('/',methods=['GET'])
 def hello():
+    print("In root get")
     if request.method =="GET":
         return 'Hello!'
 
 # endpoint for handling the transcribing of audio inputs
 
-@app.route('/transcribe', methods=['POST', 'GET'])
+@app.route('/transcribe', methods=['POST'])
 @token_required
 def transcribe():
-    print('/transcribe endpoint',request.method)
-    print(request.form)
     if request.method == 'POST':
-        language = request.form['language']
-        model = request.form['model_size']
+        print('/transcribe endpoint',request.method)
+        wav_file = request.files['audio_data']
+
+        temp_dir = tempfile.mkdtemp()
+        save_path = os.path.join(temp_dir, 'temp.wav')
+        wav_file.save(save_path)
+
+        recording = AudioSegment.from_wav(save_path)
+        mp3_path =os.path.join(temp_dir, 'temp.mp3')
+        recording.export(mp3_path, format="mp3")
+        print('Saved as, ', mp3_path)
+        print(type(recording), type(mp3_path))
+
+        
+
+        with open(mp3_path, 'rb') as f:
+            b64_bytes = base64.b64encode(f.read())
+
+        b64_str = b64_bytes.decode('utf-8')
+        
+        
+        banana_inputs = {"mp3BytesString": b64_str}
+        print('Off to banana. Transcribing ... ')
+        # Run banana
+        out = banana.run(os.getenv("BANANA_API_KEY"), os.getenv("BANANA_MODEL_KEY"), banana_inputs)
+        print('Banana Output',out)
+        transcribed_voice_note = dict(dict(out)['modelOutputs'][0])['text'].strip()
+
         try: 
             summarise = request.form['summarise'] == 'summarise'
         except:
             summarise = False
-
-        # there are no english models for large
-        print("Selecting model")
-        if model != 'large' and language == 'english':
-            model = model + '.en'
-        audio_model = whisper.load_model(model, device=DEVICE)
-        print('Run model on device:', DEVICE)
-
-
-        temp_dir = tempfile.mkdtemp()
-        save_path = os.path.join(temp_dir, 'temp.wav')
-
-        wav_file = request.files['audio_data']
-        wav_file.save(save_path)
-
-        print('Transcribing ... ')
-        if language == 'english':
-            result = audio_model.transcribe(save_path, language='english')
-        else:
-            result = audio_model.transcribe(save_path)
-
-        print('Finished Transcription')
-        print(result['text'])
-
+        print("Summarise," , summarise)
         if summarise:
             print("Summarising @ OpenAI")
             import openai
             openai.api_key = os.getenv("OPENAI_API_KEY")
-            prompt =f"You are a a model to summarise, and structure audio transcriptions into clear concise points. Transcript: {result['text']}\n Write a tl;dr summary of the transcript. Stay concise. Write bullets and notes, not full sentences. Omit verbose structures. Do not mention the author or medium of publication (Text, Arcticle, etc.) tl;dr summary of transcript:"
+            prompt =f"You are a a model to summarise, and structure audio transcriptions into clear concise points. Transcript: {transcribed_voice_note}\n Write a tl;dr summary of the transcript. Stay concise. Omit verbose structures. Do not mention the author or medium of publication (Text, Arcticle, etc.). Summary:"
             print('Prompt: ',prompt)
             return_value = openai.Completion.create(
                 model="text-curie-001",
@@ -76,12 +77,7 @@ def transcribe():
 
         else:
             print("Return Transcribed")
-            return result['text']
-        
-    elif request.method =="GET":
-        return "HI"
-    else:
-        return "This endpoint only processes POST wav blob"
+            return transcribed_voice_note
     
 if __name__ == '__main__':
     print('Serving Production ... ')
