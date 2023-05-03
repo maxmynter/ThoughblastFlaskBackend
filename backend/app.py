@@ -7,12 +7,17 @@ from auth_middleware import token_required
 import banana_dev as banana
 from pydub import AudioSegment
 import base64
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = flask.Flask(__name__)
 CORS(app)
 
 SECRET_KEY = os.getenv("MY_SECRET") or 'this is a secret'
-app.config['SECRET_KEY'] = SECRET_KEY
+app.config['SECRET_KEY'] = os.getenv("MY_SECRET")
+app.config['PORT'] = os.getenv("PORT", 5000)
+app.config['BANANA_MODEL_KEY'] = os.getenv("BANANA_MODEL_KEY")
 
 
 @app.route('/',methods=['GET'])
@@ -89,7 +94,10 @@ def transcribe():
             return transcribed_voice_note
     
 if __name__ == '__main__':
-    print('Serving Production ... ')
-    from waitress import serve
-    serve(app, host="0.0.0.0", port=5000)
-    print('Served')
+    with app.app_context():
+        print('Serving Production ... ')
+        port = flask.current_app.config["PORT"]
+        print('Port: ', port)
+        from waitress import serve
+        serve(app, host="0.0.0.0", port=port) 
+        print('Served')
