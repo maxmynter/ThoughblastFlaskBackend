@@ -58,7 +58,8 @@ def transcribe():
 
         try: 
             summarise_flag_set = request.form['summarise'] == 'summarise'
-            recording_long_enough = recording.duration_seconds > 60
+            recording_long_enough = recording.duration_seconds > 30
+            print('Summarising Flag', summarise_flag_set, 'Length Flag', recording_long_enough, "Recording Length", recording.duration_seconds)
             summarise = summarise_flag_set and recording_long_enough
         except:
             summarise = False
