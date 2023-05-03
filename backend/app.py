@@ -51,7 +51,10 @@ def transcribe():
         banana_inputs = {"mp3BytesString": b64_str}
         print('Off to banana. Transcribing ... ')
         # Run banana
-        out = banana.run(os.getenv("BANANA_API_KEY"), os.getenv("BANANA_MODEL_KEY"), banana_inputs)
+        try:
+            out = banana.run(os.getenv("BANANA_API_KEY"), os.getenv("BANANA_MODEL_KEY"), banana_inputs)
+        except:
+            return "Failed Request to Banana", 503
         print('Banana Output',out)
         transcribed_voice_note = dict(dict(out)['modelOutputs'][0])['text'].strip()
 
@@ -61,19 +64,23 @@ def transcribe():
             summarise = False
         print("Summarise," , summarise)
         if summarise:
-            print("Summarising @ OpenAI")
-            import openai
-            openai.api_key = os.getenv("OPENAI_API_KEY")
-            prompt =f"You are a a model to summarise, and structure audio transcriptions into clear concise points. Transcript: {transcribed_voice_note}\n Write a tl;dr summary of the transcript. Stay concise. Omit verbose structures. Do not mention the author or medium of publication (Text, Arcticle, etc.). Summary:"
-            print('Prompt: ',prompt)
-            return_value = openai.Completion.create(
-                model="text-curie-001",
-                prompt=prompt,
-                temperature=1,
-                max_tokens=200)
-            print("Return Transcribed and Sumarised")
-            print(return_value["choices"][0]["text"].strip().strip("/n"))
-            return return_value["choices"][0]["text"].strip().strip("/n")
+            try:
+                print("Summarising @ OpenAI")
+                import openai
+                openai.api_key = os.getenv("OPENAI_API_KEY")
+                prompt =f"You are a a model to summarise, and structure audio transcriptions into clear concise points. Transcript: {transcribed_voice_note}\n Write a tl;dr summary of the transcript. Stay concise. Omit verbose structures. Do not mention the author or medium of publication (Text, Arcticle, etc.). Summary:"
+                print('Prompt: ',prompt)
+                return_value = openai.Completion.create(
+                    model="text-curie-001",
+                    prompt=prompt,
+                    temperature=1,
+                    max_tokens=200)
+                print("Return Transcribed and Sumarised")
+                print(return_value["choices"][0]["text"].strip().strip("/n"))
+                return return_value["choices"][0]["text"].strip().strip("/n")
+            except:
+                print('Failed request to openAI')
+                return transcribed_voice_note
 
         else:
             print("Return Transcribed")
