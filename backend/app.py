@@ -74,7 +74,7 @@ def transcribe():
                 return_value = openai.Completion.create(
                     model="text-curie-001",
                     prompt=prompt,
-                    temperature=1,
+                    temperature=0.6,
                     max_tokens=200)
                 print("Return Transcribed and Sumarised")
                 print(return_value["choices"][0]["text"].strip().strip("/n"))
