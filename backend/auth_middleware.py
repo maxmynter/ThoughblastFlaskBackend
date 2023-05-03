@@ -2,7 +2,6 @@ from functools import wraps
 import jwt
 from flask import request
 from flask import current_app
-import json
 
 
 clear_text_token = "eyJhbGciOiJIUzI1NiIsInR5c2VYyyBbbMmmFtZSI6Im1sdXVra2FpIiwiaW"
