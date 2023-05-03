@@ -20,14 +20,7 @@ app.config['PORT'] = os.getenv("PORT", 5000)
 app.config['BANANA_MODEL_KEY'] = os.getenv("BANANA_MODEL_KEY")
 
 
-@app.route('/',methods=['GET'])
-def hello():
-    print("In root get")
-    if request.method =="GET":
-        return 'Hello!'
-
 # endpoint for handling the transcribing of audio inputs
-
 @app.route('/transcribe', methods=['POST'])
 @token_required
 def transcribe():
@@ -93,6 +86,23 @@ def transcribe():
             print("Return Transcribed")
             return transcribed_voice_note
     
+
+## Testing Routes 
+@app.route('/',methods=['GET'])
+def hello():
+    print("In root get")
+    if request.method =="GET":
+        return 'Hello!'
+
+@app.route('/testencryption',methods=['GET'])
+@token_required
+def test_encryption():
+    print("In testencryption get")
+    if request.method =="GET":
+        return 'Hello! Encryption seems to work'
+
+
+
 if __name__ == '__main__':
     with app.app_context():
         print('Serving Production ... ')
