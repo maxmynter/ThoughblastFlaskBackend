@@ -59,7 +59,9 @@ def transcribe():
         transcribed_voice_note = dict(dict(out)['modelOutputs'][0])['text'].strip()
 
         try: 
-            summarise = request.form['summarise'] == 'summarise'
+            summarise_flag_set = request.form['summarise'] == 'summarise'
+            recording_long_enough = recording.duration_seconds > 60
+            summarise = summarise_flag_set and recording_long_enough
         except:
             summarise = False
         print("Summarise," , summarise)
